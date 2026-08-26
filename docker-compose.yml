@@ -1,0 +1,9 @@
+services:
+  cti-dashboard:
+    build: .
+    container_name: cti_soc_dashboard
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend/threats.csv:/app/backend/threats.csv
+    restart: always
