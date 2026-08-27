@@ -4,6 +4,10 @@ let activeAttackFilter = 'ALL';
 let activeSeverityFilter = 'ALL';
 let activeCountryFilter = 'ALL';
 
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000'
+    : 'https://cyber-threat-dashboad.onrender.com/';
+
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Initialize the 3D Globe
     if (typeof initAttackMap === 'function') {
