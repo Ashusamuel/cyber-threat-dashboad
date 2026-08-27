@@ -285,3 +285,162 @@ function populatePulseTable(threats) {
         tbody.appendChild(row);
     });
 }
+
+// --- 1. POLLING MECHANISM (Assigned: Samuel & Demaih) ---
+function initRealTimePolling() {
+    async function fetchLatestData() {
+        try {
+            const response = await fetch('/api/threats');
+            if (!response.ok) throw new Error('API request failed');
+            const result = await response.json();
+            const threats = result.data || result;
+
+            // Update Header Timestamp
+            const now = new Date();
+            const timeString = now.toTimeString().split(' ')[0]; // HH:MM:SS
+            const dateString = now.toDateString().split(' ').slice(1, 3).join(' '); // Month Day
+            
+            const timestampElem = document.getElementById('live-timestamp');
+            if (timestampElem) {
+                timestampElem.textContent = `${dateString} ${now.getFullYear()} ${timeString}`;
+            }
+
+            // Silent UI refresh
+            if (typeof loadMalwareChart === 'function') loadMalwareChart();
+            console.log(`[${timeString}] 🔄 Live data polled successfully.`);
+        } catch (err) {
+            console.warn('⚠️ Polling error (backend offline):', err.message);
+        }
+    }
+    // Run every 60 seconds
+    setInterval(fetchLatestData, 60000);
+}
+
+// --- 2. DRILL-DOWN MODAL (Assigned: Demaih, Khen & Shambeline) ---
+function attachChartDrillDown(chartInstance) {
+    const canvas = chartInstance.canvas;
+    
+    canvas.addEventListener('click', (evt) => {
+        const points = chartInstance.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+        if (!points.length) return;
+
+        const index = points[0].index;
+        const selectedType = chartInstance.data.labels[index];
+        openDrillDownModal(selectedType);
+    });
+}
+
+async function openDrillDownModal(attackType) {
+    // Remove existing modal if open
+    const existingModal = document.getElementById('drilldown-modal');
+    if (existingModal) existingModal.remove();
+
+    // Create Modal Elements
+    const modal = document.createElement('div');
+    modal.id = 'drilldown-modal';
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(5, 10, 19, 0.85); backdrop-filter: blur(4px);
+        display: flex; align-items: center; justify-content: center; z-index: 9999;
+    `;
+
+    // Fetch threats for this specific attack type
+    let threatRows = '';
+    try {
+        const res = await fetch(`/api/threats?type=${encodeURIComponent(attackType)}`);
+        const json = await res.json();
+        const items = json.data || [];
+
+        threatRows = items.map(item => `
+            <tr style="border-bottom: 1px solid #1E293B;">
+                <td style="padding: 10px; color: #F1F5F9;">${item.name || item.title || 'Unknown Threat'}</td>
+                <td style="padding: 10px; color: #94A3B8;">${item.country || item.origin || 'Global'}</td>
+                <td style="padding: 10px; color: #94A3B8;">${item.date || 'Today'}</td>
+                <td style="padding: 10px;"><span class="sev-badge ${item.severity?.toLowerCase()}">${item.severity}</span></td>
+                <td style="padding: 10px; font-family: monospace; color: #38BDF8;">${item.ioc || item.ip || '192.168.1.1'}</td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        // Fallback sample row if API endpoint is static
+        threatRows = `
+            <tr style="border-bottom: 1px solid #1E293B;">
+                <td style="padding: 10px; color: #F1F5F9;">${attackType} Campaign Alpha</td>
+                <td style="padding: 10px; color: #94A3B8;">RU</td>
+                <td style="padding: 10px; color: #94A3B8;">2026-08-27</td>
+                <td style="padding: 10px;"><span class="sev-badge high">High</span></td>
+                <td style="padding: 10px; font-family: monospace; color: #38BDF8;">185.220.101.5</td>
+            </tr>
+        `;
+    }
+
+    modal.innerHTML = `
+        <div style="background: #0B132B; border: 1px solid #7C3AED; border-radius: 10px; width: 90%; max-width: 700px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: #A78BFA; margin: 0;">🔍 Drill-Down: ${attackType}</h3>
+                <button onclick="document.getElementById('drilldown-modal').remove()" style="background: none; border: none; color: #94A3B8; font-size: 20px; cursor: pointer;">✕</button>
+            </div>
+            <div style="max-height: 350px; overflow-y: auto;">
+                <table style="width: 100%; text-align: left; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="color: #64748B; border-bottom: 1px solid #1E293B;">
+                            <th style="padding: 8px;">NAME</th>
+                            <th style="padding: 8px;">ORIGIN</th>
+                            <th style="padding: 8px;">DATE</th>
+                            <th style="padding: 8px;">SEVERITY</th>
+                            <th style="padding: 8px;">IOC / IP</th>
+                        </tr>
+                    </thead>
+                    <tbody>${threatRows}</tbody>
+                </table>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+}
+
+// Start listeners on window load
+window.addEventListener('load', () => {
+    initRealTimePolling();
+    
+    // Attach drill-down modal click to donut chart if initialized
+    if (typeof attackChart !== 'undefined') {
+        attachChartDrillDown(attackChart);
+    }
+});
+
+// --- UI POLISH: LOADING SPINNERS & API ERROR STATES ---
+
+// Render Spinner
+function showLoadingState(elementId) {
+    const el = document.getElementById(elementId);
+    if (el) {
+        el.innerHTML = `
+            <div class="loading-spinner-container" style="display:flex; justify-content:center; align-items:center; height:100%; min-height:120px;">
+                <div class="spinner" style="border: 3px solid rgba(124,58,237,0.1); border-left-color: #7C3AED; border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite;"></div>
+            </div>
+        `;
+    }
+}
+
+// Render Error State
+function showErrorState(elementId, errorMessage = 'Failed to load telemetry data') {
+    const el = document.getElementById(elementId);
+    if (el) {
+        el.innerHTML = `
+            <div class="error-banner" style="background: rgba(239,68,68,0.1); border: 0.5px solid #EF4444; color: #FCA5A5; border-radius: 6px; padding: 12px; font-size: 12px; text-align: center;">
+                ⚠️ ${errorMessage}
+            </div>
+        `;
+    }
+}
+
+// Add CSS keyframe for spinner
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);

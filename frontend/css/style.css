@@ -191,7 +191,7 @@ body {
 /* MAIN PANELS */
 .mid-grid { 
     display: grid; 
-    grid-template-columns: 60% 38.5%; 
+    grid-template-columns: 50% 48.5%; 
     gap: 1.5%; 
     margin-bottom: 15px; 
 }
@@ -247,15 +247,11 @@ body {
 .map-panel {
     display: flex;
     flex-direction: column;
-    aspect-ratio: 1 / 1;
-    min-height: 520px;
     overflow: hidden;
 }
     
 #map {
     width: 100% !important;
-    flex: 1;
-    min-height: 0;
     position: relative;
 }
 
@@ -329,7 +325,6 @@ body {
 
     /* FIXED: Added missing class dot selector */
     .map-panel {
-        max-height: 450px;
         width: 100%;
     }
 
@@ -407,11 +402,6 @@ body {
         grid-template-columns: 1fr;
     }
 
-    .map-panel {
-        aspect-ratio: 1 / 1;
-        max-height: 350px;
-    }
-
     .table-panel { overflow-x: auto; }
     .pulse-table { min-width: 500px; }
 }
@@ -420,9 +410,5 @@ body {
 @media screen and (max-width: 480px) {
     .kpi-grid {
         grid-template-columns: 1fr;
-    }
-
-    .map-panel {
-        max-height: 300px;
     }
 }
