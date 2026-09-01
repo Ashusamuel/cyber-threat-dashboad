@@ -30,17 +30,17 @@ git clone [https://github.com/your-username/cti-dashboard.git](https://github.co
 cd cti-dashboard
  
 ------
-## Backend Config
-# Navigate to backend directory
+# Backend Config
+## Navigate to backend directory
 cd backend
-# Create and activate virtual environment
+## Create and activate virtual environment
 python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
-# Install required dependencies
+## Install required dependencies
 pip install -r requirements.txt
-# Start the local development server
+## Start the local development server
 python app.py
 
-# Optional: Serve locally using Python HTTP server
+## Optional: Serve locally using Python HTTP server
 cd ../frontend
 python3 -m http.server 3000
