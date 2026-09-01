@@ -164,8 +164,7 @@
         <script src="js/map.js"></script>
         <script src="js/main.js"></script>
 
-            <script>
-                
+    <script>            
     function startRealTimePolling() {
         // Poll every 60 sec
         setInterval(async () => {
@@ -186,15 +185,15 @@
                 // 3. Silently update dynamic dashboard feeds
                 if (typeof loadMalwareChart === 'function') loadMalwareChart();
                 
-                console.log(`[${timestampStr}] 🔄 Dashboard silently refreshed.`);
+                console.log(`[${timestampStr}] Dashboard silently refreshed.`);
             } catch (err) {
-                console.warn('⚠️ Polling attempt failed, retaining cached view:', err);
+                console.warn('Polling attempt failed, retaining cached view:', err);
             }
         }, 60000);
     }
 
     // Start polling on page load
     window.addEventListener('load', startRealTimePolling);
-            </script>
+    </script>
     </body>
     </html>

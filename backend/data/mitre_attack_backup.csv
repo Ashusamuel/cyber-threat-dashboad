@@ -1,6 +1,0 @@
-id,title,attack_type,ioc_count,country,timestamp
-101,Phishing Campaign,Phishing,14,Cameroon,2026-08-20T10:00:00
-102,LockBit Variant Spread,Ransomware,32,USA,2026-08-21T11:30:00
-103,SQLi Exploit Attempt,SQL Injection,5,Germany,2026-08-21T14:15:00
-104,SYN Flood Attack,Ddos,89,China,2026-08-22T08:45:00
-105,Credential Stuffing,Brute Force,45,Nigeria,      2026-08-22T09:20:00
