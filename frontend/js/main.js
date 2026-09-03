@@ -448,3 +448,33 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+ function startRealTimePolling() {
+        // Poll every 60 sec
+        setInterval(async () => {
+            try {
+                // 1. Fetch live telemetry from backend
+                const response = await fetch(`${API_BASE_URL}/api/threats`);
+                if (!response.ok) throw new Error('Network response failed');
+                const data = await response.json();
+
+                // 2. Update Header Timestamp
+                const now = new Date();
+                const timestampStr = now.toLocaleTimeString();
+                const timestampElem = document.getElementById('live-timestamp');
+                if (timestampElem) {
+                    timestampElem.textContent = `Last Updated: ${timestampStr}`;
+                }
+
+                // 3. Silently update dynamic dashboard feeds
+                if (typeof loadMalwareChart === 'function') loadMalwareChart();
+                
+                console.log(`[${timestampStr}] Dashboard silently refreshed.`);
+            } catch (err) {
+                console.warn('Polling attempt failed, retaining cached view:', err);
+            }
+        }, 60000);
+    }
+
+    // Start polling on page load
+    window.addEventListener('load', startRealTimePolling);
