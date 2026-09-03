@@ -232,7 +232,7 @@ body {
 }
 
 .map-container {
-    width: 10%;
+    width: 100%;
     aspect-ratio: 1 / 1;
     max-height: 550px;
     display: flex;
@@ -380,6 +380,18 @@ body {
     .nav-right {
         width: 100%;
         justify-content: space-between;
+    }
+
+    /* ADD THIS MAP FIX */
+    .map-panel {
+        width: 100%;
+        min-height: 380px;
+    }
+
+    #map {
+        width: 100% !important;
+        height: 350px !important;
+        min-height: 350px !important;
     }
 
     .kpi-grid {
