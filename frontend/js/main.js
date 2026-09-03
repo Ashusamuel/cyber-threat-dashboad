@@ -294,7 +294,7 @@ function populatePulseTable(threats) {
 function initRealTimePolling() {
     async function fetchLatestData() {
         try {
-            const response = await fetch('/api/threats');
+            const response = await fetch(`${API_BASE_URL}/api/threats`);
             if (!response.ok) throw new Error('API request failed');
             const result = await response.json();
             const threats = result.data || result;
