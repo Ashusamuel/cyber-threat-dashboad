@@ -17,16 +17,17 @@ function initAttackMap() {
     // Clear previous elements if re-initializing
     container.innerHTML = '';
 
-    // Calculate a square dimension based on the container width
-    const squareSize = container.clientWidth || 450;
+    // Fix 1: Fallback calculation if clientWidth evaluates to 0 on initial mobile paint
+    const parentWidth = container.clientWidth || container.parentElement.clientWidth || window.innerWidth;
+    const squareSize = parentWidth > 0 ? parentWidth : 350;
 
-    // Initialize Globe.gl 3D instance with equal width and height (1:1 Square)
+    // Initialize Globe.gl 3D instance
     attackGlobe = Globe()
         (container)
         .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
         .backgroundColor('rgba(0,0,0,0)')
         .width(squareSize)
-        .height(squareSize) // Forced equal height to form a perfect square
+        .height(squareSize)
 
         // Arc styling
         .arcColor(() => ['#E63946', '#00B4D8'])
@@ -41,27 +42,32 @@ function initAttackMap() {
         .ringPropagationSpeed(3)
         .ringRepeatPeriod(800);
 
-    // Control settings
+    // Control settings adjusted for touch devices
     const controls = attackGlobe.controls();
     if (controls) {
         controls.autoRotate = true;
         controls.autoRotateSpeed = 0.8;
-        controls.enableZoom = true;
+        controls.enableZoom = false; // Disable scroll-zoom on mobile to allow normal page scrolling
         
         controls.minDistance = 100;
         controls.maxDistance = 500;
     }
 
-    // Camera perspective: position closer to make the globe fill the square container
-    attackGlobe.pointOfView({ lat: 20, lng: 0, altitude: 1.5 });
+    // Camera perspective adjustment
+    attackGlobe.pointOfView({ lat: 20, lng: 0, altitude: 1.8 });
 
-    // Window resize handler to maintain the square aspect ratio dynamically
-    window.addEventListener('resize', () => {
+    // Fix 2: Delayed resize trigger for mobile orientation changes and slow DOM paints
+    const handleResize = () => {
         if (attackGlobe && container) {
-            const newSquareSize = container.clientWidth;
-            attackGlobe.width(newSquareSize).height(newSquareSize);
+            const newWidth = container.clientWidth || window.innerWidth;
+            if (newWidth > 0) {
+                attackGlobe.width(newWidth).height(newWidth);
+            }
         }
-    });
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', () => setTimeout(handleResize, 200));
 }
 
 function extractCoords(countryKey) {

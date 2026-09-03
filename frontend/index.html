@@ -170,7 +170,7 @@
         setInterval(async () => {
             try {
                 // 1. Fetch live telemetry from backend
-                const response = await fetch('/api/threats');
+                const response = await fetch(`${API_BASE_URL}/api/threats`);
                 if (!response.ok) throw new Error('Network response failed');
                 const data = await response.json();
 

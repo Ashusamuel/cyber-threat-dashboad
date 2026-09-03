@@ -6,7 +6,7 @@ let activeCountryFilter = 'ALL';
 
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:5000'
-    : 'https://cyber-threat-dashboad.onrender.com/';
+    : 'https://cyber-threat-dashboad.onrender.com';
 
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Initialize the 3D Globe

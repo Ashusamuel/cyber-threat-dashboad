@@ -82,7 +82,7 @@ body {
     position: relative; 
     overflow: hidden;
     transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
-                box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     cursor: pointer;
 }
 
@@ -248,11 +248,15 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    width: 100%;
 }
     
 #map {
     width: 100% !important;
     position: relative;
+    min-height: 350px;
+    overflow: hidden;
+    height: 100%;
 }
 
 #map canvas {
@@ -260,6 +264,7 @@ body {
     height: 100% !important;
     display: block;
 }
+
 
 .map-footer { 
     display: flex; 
@@ -275,10 +280,18 @@ body {
     display: inline-block; 
     margin-right: 3px; 
 }
-.dot.high { background: var(--accent-red); }
-.dot.medium { background: var(--accent-yellow); }
-.dot.low { background: var(--accent-purple); }
-.dot.info { background: var(--accent-blue); }
+.dot.high {
+     background: var(--accent-red); 
+    }
+.dot.medium { 
+    background: var(--accent-yellow); 
+}
+.dot.low { 
+    background: var(--accent-purple); 
+}
+.dot.info { 
+    background: var(--accent-blue); 
+}
 
 /* TABLES & BADGES */
 .pulse-table { 
