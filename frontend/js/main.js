@@ -48,7 +48,8 @@ function updateLiveTimestamp() {
 // Fetch Threat Data from API
 async function refreshDashboard() {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/threats');
+        // FIXED: Replaced hardcoded 127.0.0.1 with dynamic API_BASE_URL
+        const response = await fetch(`${API_BASE_URL}/api/threats`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         
         rawThreatsData = await response.json();
