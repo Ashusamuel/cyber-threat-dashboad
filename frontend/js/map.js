@@ -1,123 +1,128 @@
-var attackGlobe = null;
+    var attackGlobe = null;
 
-// Latitude & Longitude map for country lookup
-const COUNTRY_COORDS = {
-    "RU": { lat: 61.524, lng: 105.318 },
-    "US": { lat: 37.0902, lng: -95.7129 },
-    "CN": { lat: 35.8617, lng: 104.1954 },
-    "NG": { lat: 9.082, lng: 8.6753 },
-    "DE": { lat: 51.1657, lng: 10.4515 },
-    "CM": { lat: 7.3697, lng: 12.3547 }
-};
+    // Latitude & Longitude map for country lookup
+    const COUNTRY_COORDS = {
+        "RU": { lat: 61.524, lng: 105.318 },
+        "US": { lat: 37.0902, lng: -95.7129 },
+        "CN": { lat: 35.8617, lng: 104.1954 },
+        "NG": { lat: 9.082, lng: 8.6753 },
+        "DE": { lat: 51.1657, lng: 10.4515 },
+        "CM": { lat: 7.3697, lng: 12.3547 }
+    };
 
-function initAttackMap() {
-    const container = document.getElementById('map');
-    if (!container) return;
+    function initAttackMap() {
+        const container = document.getElementById('map');
+        if (!container) return;
 
-    // Clear previous elements if re-initializing
-    container.innerHTML = '';
+        // Clear previous elements if re-initializing
+        container.innerHTML = '';
 
-    // Fix 1: Fallback calculation if clientWidth evaluates to 0 on initial mobile paint
-    const parentWidth = container.clientWidth || container.parentElement.clientWidth || window.innerWidth;
-    const squareSize = parentWidth > 0 ? parentWidth : 350;
+        // Fix 1: Fallback calculation if clientWidth evaluates to 0 on initial mobile paint
+        const parentWidth = container.clientWidth || container.parentElement.clientWidth || window.innerWidth;
+        const squareSize = parentWidth > 0 ? parentWidth : 350;
 
-    // Initialize Globe.gl 3D instance
-    attackGlobe = Globe()
-        (container)
-        .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
-        .backgroundColor('rgba(0,0,0,0)')
-        .width(squareSize)
-        .height(squareSize)
+        // Initialize Globe.gl 3D instance
+        attackGlobe = Globe()
+            (container)
+            .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+            .backgroundColor('rgba(0,0,0,0)')
+            .width(squareSize)
+            .height(squareSize)
 
-        // Arc styling
-        .arcColor(() => ['#E63946', '#00B4D8'])
-        .arcDashLength(0.4)
-        .arcDashGap(0.2)
-        .arcDashAnimateTime(1800)
-        .arcStroke(0.6)
+            // Arc styling
+            .arcColor(() => ['#E63946', '#00B4D8'])
+            .arcDashLength(0.4)
+            .arcDashGap(0.2)
+            .arcDashAnimateTime(1800)
+            .arcStroke(0.6)
 
-        // Pulsing rings at attack origin nodes
-        .ringColor(() => '#FF3B30')
-        .ringMaxRadius(10)
-        .ringPropagationSpeed(3)
-        .ringRepeatPeriod(800);
+            // Pulsing rings at attack origin nodes
+            .ringColor(() => '#FF3B30')
+            .ringMaxRadius(10)
+            .ringPropagationSpeed(3)
+            .ringRepeatPeriod(800);
 
-    // Control settings adjusted for touch devices
+        // Control settings adjusted for touch devices
+        // Inside initAttackMap() in js/map.js
     const controls = attackGlobe.controls();
     if (controls) {
         controls.autoRotate = true;
         controls.autoRotateSpeed = 0.8;
-        controls.enableZoom = false; // Disable scroll-zoom on mobile to allow normal page scrolling
         
+        // Enable zoom for both pinch (mobile) and mouse wheel (desktop)
+        controls.enableZoom = true;
+        controls.zoomSpeed = 0.8; // Smooth zoom sensitivity
+        
+        // Set min/max camera distance to prevent clipping into the globe or zooming too far out
         controls.minDistance = 100;
-        controls.maxDistance = 500;
+        controls.maxDistance = 450;
     }
 
-    // Camera perspective adjustment
-    attackGlobe.pointOfView({ lat: 20, lng: 0, altitude: 1.8 });
+        // Camera perspective adjustment
+        attackGlobe.pointOfView({ lat: 20, lng: 0, altitude: 1.8 });
 
-    // Fix 2: Delayed resize trigger for mobile orientation changes and slow DOM paints
-    const handleResize = () => {
-        if (attackGlobe && container) {
-            const newWidth = container.clientWidth || window.innerWidth;
-            if (newWidth > 0) {
-                attackGlobe.width(newWidth).height(newWidth);
+        // Fix 2: Delayed resize trigger for mobile orientation changes and slow DOM paints
+        const handleResize = () => {
+            if (attackGlobe && container) {
+                const newWidth = container.clientWidth || window.innerWidth;
+                if (newWidth > 0) {
+                    attackGlobe.width(newWidth).height(newWidth);
+                }
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('orientationchange', () => setTimeout(handleResize, 200));
+    }
+
+    function extractCoords(countryKey) {
+        let lat = 20, lng = 0;
+        
+        // Check local lookup table
+        if (COUNTRY_COORDS[countryKey]) {
+            lat = COUNTRY_COORDS[countryKey].lat;
+            lng = COUNTRY_COORDS[countryKey].lng;
+        } else if (typeof getCoordinates === 'function') {
+            const res = getCoordinates(countryKey);
+            if (Array.isArray(res)) {
+                lat = res[0];
+                lng = res[1];
+            } else if (res && typeof res === 'object') {
+                lat = res.lat || 20;
+                lng = res.lng || 0;
             }
         }
-    };
 
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', () => setTimeout(handleResize, 200));
-}
-
-function extractCoords(countryKey) {
-    let lat = 20, lng = 0;
-    
-    // Check local lookup table
-    if (COUNTRY_COORDS[countryKey]) {
-        lat = COUNTRY_COORDS[countryKey].lat;
-        lng = COUNTRY_COORDS[countryKey].lng;
-    } else if (typeof getCoordinates === 'function') {
-        const res = getCoordinates(countryKey);
-        if (Array.isArray(res)) {
-            lat = res[0];
-            lng = res[1];
-        } else if (res && typeof res === 'object') {
-            lat = res.lat || 20;
-            lng = res.lng || 0;
-        }
+        // Add minor offset so multiple items from the same country don't overlap into 1 point
+        return {
+            lat: lat + (Math.random() - 0.5) * 4,
+            lng: lng + (Math.random() - 0.5) * 4
+        };
     }
 
-    // Add minor offset so multiple items from the same country don't overlap into 1 point
-    return {
-        lat: lat + (Math.random() - 0.5) * 4,
-        lng: lng + (Math.random() - 0.5) * 4
-    };
-}
+    function renderMapMarkers(threatData) {
+        if (!attackGlobe || !Array.isArray(threatData)) return;
 
-function renderMapMarkers(threatData) {
-    if (!attackGlobe || !Array.isArray(threatData)) return;
+        const arcsData = [];
+        const ringsData = [];
+        const targetCoords = COUNTRY_COORDS["US"];
 
-    const arcsData = [];
-    const ringsData = [];
-    const targetCoords = COUNTRY_COORDS["US"];
+        threatData.forEach(t => {
+            const origin = extractCoords(t.country);
 
-    threatData.forEach(t => {
-        const origin = extractCoords(t.country);
+            ringsData.push({
+                lat: origin.lat,
+                lng: origin.lng
+            });
 
-        ringsData.push({
-            lat: origin.lat,
-            lng: origin.lng
+            arcsData.push({
+                startLat: origin.lat,
+                startLng: origin.lng,
+                endLat: targetCoords.lat + (Math.random() - 0.5) * 3,
+                endLng: targetCoords.lng + (Math.random() - 0.5) * 3,
+            });
         });
 
-        arcsData.push({
-            startLat: origin.lat,
-            startLng: origin.lng,
-            endLat: targetCoords.lat + (Math.random() - 0.5) * 3,
-            endLng: targetCoords.lng + (Math.random() - 0.5) * 3,
-        });
-    });
-
-    attackGlobe.arcsData(arcsData);
-    attackGlobe.ringsData(ringsData);
-}
+        attackGlobe.arcsData(arcsData);
+        attackGlobe.ringsData(ringsData);
+    }

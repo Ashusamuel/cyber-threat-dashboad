@@ -257,6 +257,7 @@ body {
     min-height: 350px;
     overflow: hidden;
     height: 100%;
+    touch-action: pan-y;
 }
 
 #map canvas {
